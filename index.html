@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>...</title>
+</head>
+<body>
+
+
+
+<form>
+  <fieldset>
+    <legend>send message to cl1p:</legend>
+    <label for="msg">Message:</label>
+    <br>
+    <textarea rows="15" cols="80" id="msg"></textarea>
+    <br>
+    <input type="text" id="word" placeholder="custom token">
+    <br><br>
+    <input type="button" value="SEND" id="send">
+    <label for="token">Token: <span id="token"></span></label>
+  </fieldset>
+</form>
+
+<br><br><br><br>
+
+
+<form>
+  <fieldset>
+    <legend>receive message link:</legend>
+    <input type="text" id="token_receive" placeholder="token">
+    <input type="button" value="GET" id="receive">
+    <br>
+    <label for="url">Url:</label>
+    <br>
+    <textarea rows="3" cols="50" id="url"></textarea>
+    <br>
+  </fieldset>
+</form>
+
+
+
+
+
+<script type="text/javascript">
+
+const sender_private = async (_msg, word = false) =>
+{
+	let date 	= new Date();
+		word 	= word || Math.floor(Math.random() * 10000);
+	let _id 	= word+"-"+date.getFullYear()+"-"+date.getMonth()+"-"+date.getDay();
+
+	let id 	= btoa(_id); 	// cl1p identifier base64 encoded
+	let msg = _msg; 	// msg to delivery base64 encoded
+
+
+	var data = new FormData();
+	data.append('ttl', 0);
+	data.append('content', msg);
+
+	// send msg to cl1p.net
+	await fetch(`https://cl1p.net/${id}`, {
+		method: 'POST',
+		mode: 'no-cors',
+		body: data
+	}).then(() => console.log(word));
+
+
+	return word;
+}
+
+const receiver_private = (word) =>
+{
+	let date 	= new Date();
+	let _id 	= word+"-"+date.getFullYear()+"-"+date.getMonth()+"-"+date.getDay();
+	let id 		= btoa(_id);
+
+	let url		= `https://cl1p.net/${id}`;
+
+	return url;
+}
+
+
+
+
+window.onload = function() {
+
+	const send 		= document.querySelector("#send");					// button to perform SEND action
+	const receive 	= document.querySelector("#receive");				// button to perform RECEIVE action
+
+
+
+
+	send.addEventListener('click', async function(e)
+	{
+		e.preventDefault();
+
+		const msg 			= document.querySelector("#msg").value; 	// message to send
+		const custom_word 	= document.querySelector("#word").value; 	// custom secret word (optional)
+		const token 		= document.querySelector("#token");			// result with secret word
+
+		if (msg.length > 0)
+		{
+			if (custom_word.length > 0)
+			{
+				// get result from random word
+				let result 		= await sender_private(msg, custom_word);
+				token.innerText = result;
+			}
+			else
+			{
+				// get result from random word
+				let result 		= await sender_private(msg);
+				token.innerText = result;
+			}
+		}
+	});
+
+
+	receive.addEventListener('click', function(e)
+	{
+		e.preventDefault();
+
+		const token_receive = document.querySelector("#token_receive").value;
+		const url			= document.querySelector("#url");
+
+		if (token_receive.length > 0)
+		{
+			let result 	= receiver_private(token_receive);
+			url.value 	= result;
+		}
+	});
+}
+
+
+</script>
+</body>
+</html>
